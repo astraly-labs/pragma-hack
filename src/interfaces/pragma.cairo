@@ -68,15 +68,15 @@ trait PragmaOracle {
     ) -> (felt252, felt252, felt252, felt252);
 
     fn get_spot_median_for_sources(
-        pair_id: felt252, sources_len: felt252, sources: felt252
+        pair_id: felt252, sources: Array<felt252>
     ) -> (felt252, felt252, felt252, felt252);
 
     fn get_spot_for_sources(
-        pair_id: felt252, aggregation_mode: felt252, sources_len: felt252, sources: felt252
+        pair_id: felt252, aggregation_mode: felt252, sources: Array<felt252>
     ) -> (felt252, felt252, felt252, felt252);
 
     fn get_futures_for_sources(
-        pair_id: felt252, expiry_timestamp: felt252, sources_len: felt252, sources: felt252
+        pair_id: felt252, expiry_timestamp: felt252, sources: Array<felt252>
     ) -> (felt252, felt252, felt252, felt252);
 
     fn get_spot_entry(pair_id: felt252, source: felt252) -> SpotEntry;
@@ -108,4 +108,13 @@ trait PragmaOracle {
     fn get_entries(key: felt252) -> Array<GenericEntry>;
 
     fn get_entries_for_sources(key: felt252, sources: Array<felt252>) -> Array<GenericEntry>;
+}
+
+#[abi]
+trait SummaryStats {
+    fn calculate_mean(key: felt252, start: felt252, stop: felt252) -> felt252;
+
+    fn calculate_volatility(
+        key: felt252, start: felt252, stop: felt252, num_samples: felt252
+    ) -> felt252;
 }
