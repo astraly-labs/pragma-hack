@@ -3,4 +3,4 @@ name = "hack_template"
 version = "0.1.0"
 
 [dependencies]
-alexandria_math = { git = "https://github.com/keep-starknet-strange/alexandria" }
+alexandria_math = { git = "https://github.com/keep-starknet-strange/alexandria", rev = "c72195f" }
