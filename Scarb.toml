@@ -2,5 +2,14 @@
 name = "hack_template"
 version = "0.1.0"
 
+
+
+
 [dependencies]
-alexandria_math = { git = "https://github.com/keep-starknet-strange/alexandria", rev = "c72195f" }
+starknet = "2.1.0"
+alexandria_math = { git = "https://github.com/keep-starknet-strange/alexandria.git", rev = "9909280" }
+
+
+[[target.starknet-contract]]
+
+
