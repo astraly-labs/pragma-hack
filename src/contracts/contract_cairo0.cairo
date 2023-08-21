@@ -1,38 +1,52 @@
-#[contract]
+use starknet::ContractAddress;
+
+#[starknet::interface]
+trait HackTemplateABI<TContractState>{ 
+    fn initializer(ref self : TContractState, pragma_contract: ContractAddress, summary_stats : ContractAddress);
+    fn check_eth_threshold(self : @TContractState, threshold: u128) ->bool;
+    fn get_asset_price(self : @TContractState, asset_id: felt252) -> felt252 ;
+    fn realized_volatility(self : @TContractState) -> felt252;
+
+}
+
+
+#[starknet::contract]
 mod HackTemplate {
-    use starknet::ContractAddress;
-    use array::ArrayTrait;
+    use super::{ContractAddress, HackTemplateABI};
+    use array::{ArrayTrait, SpanTrait};
     use traits::{Into, TryInto};
     use hack_template::interfaces::{
-        pragma::{
+        cairo_0::pragma::{
             PragmaOracleDispatcher, PragmaOracleDispatcherTrait, SummaryStatsDispatcher,
             SummaryStatsDispatcherTrait
         },
     };
+    
     use alexandria_math::math::pow;
     use starknet::get_block_timestamp;
     use option::OptionTrait;
 
+    #[storage]
     struct Storage {
         pragma_contract: ContractAddress,
         summary_stats: ContractAddress,
     }
 
-    #[external]
-    fn initializer(pragma_contract: ContractAddress, summary_stats: ContractAddress) {
-        if pragma_contract::read().into() == 0 {
-            pragma_contract::write(pragma_contract);
+    #[external(v0)]
+    impl HackTemplateABIImpl of HackTemplateABI<ContractState> {
+        fn initializer(ref self : ContractState, pragma_contract: ContractAddress, summary_stats: ContractAddress) {
+            if self.pragma_contract.read().into() == 0 {
+                self.pragma_contract.write(pragma_contract);
+            }
+            if self.summary_stats.read().into() == 0 {
+                self.summary_stats.write(summary_stats);
+            }
         }
-        if summary_stats::read().into() == 0 {
-            summary_stats::write(summary_stats);
-        }
-    }
 
-    #[external]
-    fn check_eth_threshold(threshold: u128) -> bool {
+        fn check_eth_threshold(self : @ContractState, threshold: u128) -> bool {
         // Retrieve the oracle dispatcher
         let oracle_dispatcher = PragmaOracleDispatcher {
-            contract_address: pragma_contract::read()
+            contract_address: self.pragma_contract.read()
         };
 
         // Call the Oracle contract
@@ -60,12 +74,10 @@ mod HackTemplate {
 
         return shifted_threshold <= price;
     }
-
-    #[view]
-    fn get_asset_price(asset_id: felt252) -> felt252 {
+    fn get_asset_price(self : @ContractState,asset_id: felt252) -> felt252 {
         // Retrieve the oracle dispatcher
         let oracle_dispatcher = PragmaOracleDispatcher {
-            contract_address: pragma_contract::read()
+            contract_address: self.pragma_contract.read()
         };
 
         // Call the Oracle contract
@@ -75,12 +87,11 @@ mod HackTemplate {
         return price;
     }
 
-    #[view]
-    fn realized_volatility() -> felt252 {
-        let oracle_dispatcher = SummaryStatsDispatcher { contract_address: summary_stats::read() };
+    fn realized_volatility(self : @ContractState) -> felt252 {
+        let oracle_dispatcher = SummaryStatsDispatcher { contract_address: self.summary_stats.read() };
 
         let key = 'ETH/USD';
-        let timestamp = get_block_timestamp();
+        let timestamp = starknet::get_block_timestamp();
 
         let start = timestamp - 259200000; // 1 month ago
         let end = timestamp; // now
@@ -94,4 +105,12 @@ mod HackTemplate {
 
         volatility
     }
+    }
+    
+
+    
+
+    
+
+    
 }
