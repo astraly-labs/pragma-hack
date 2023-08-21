@@ -1,5 +1,3 @@
-
-
 use starknet::ContractAddress;
 
 #[derive(Copy, Drop, Serde, starknet::Store)]
