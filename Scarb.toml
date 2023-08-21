@@ -6,7 +6,7 @@ version = "0.1.0"
 
 
 [dependencies]
-starknet = "2.0.0"
+starknet = "2.1.0"
 alexandria_math = { git = "https://github.com/keep-starknet-strange/alexandria.git", rev = "9909280" }
 
 
