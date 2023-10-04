@@ -9,7 +9,7 @@ struct BaseEntry {
 
 #[derive(Serde, Drop, Copy)]
 struct GenericEntryStorage {
-    timestamp__value: u256,
+    timestamp__value: u256
 }
 
 #[derive(Copy, Drop, Serde)]
