@@ -191,8 +191,8 @@ trait IPragmaABI<TContractState> {
         checkpoint_index: u64,
         aggregation_mode: AggregationMode
     ) -> Checkpoint;
-    fn get_sources_threshold(self: @TContractState,) -> u32;
-    fn get_admin_address(self: @TContractState,) -> ContractAddress;
+    fn get_sources_threshold(self: @TContractState) -> u32;
+    fn get_admin_address(self: @TContractState) -> ContractAddress;
     fn get_implementation_hash(self: @TContractState) -> ClassHash;
     fn publish_data(ref self: TContractState, new_entry: PossibleEntries);
     fn publish_data_entries(ref self: TContractState, new_entries: Span<PossibleEntries>);
