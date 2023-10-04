@@ -6,7 +6,7 @@ trait HackTemplateABI<TContractState> {
         ref self: TContractState, pragma_contract: ContractAddress, summary_stats: ContractAddress
     );
     fn check_eth_threshold(self: @TContractState, threshold: u32) -> bool;
-    fn get_asset_price(self: @TContractState, asset_id: felt252) -> u256;
+    fn get_asset_price(self: @TContractState, asset_id: felt252) -> u128;
     fn realized_volatility(self: @TContractState) -> (u128, u32);
 }
 
@@ -23,7 +23,7 @@ mod HackTemplate {
         },
     };
 
-    use alexandria_math::math::pow;
+    use alexandria_math::pow;
     use starknet::get_block_timestamp;
     use option::OptionTrait;
     const ETH_USD: felt252 = 'ETH/USD';
@@ -75,12 +75,9 @@ mod HackTemplate {
             // Shift the threshold by the multiplier
             let shifted_threshold: u128 = threshold.into() * multiplier;
 
-            // Some annoying type conversions that will disappear with future compiler versions
-            let shifted_threshold: u256 = shifted_threshold.into();
-
             return shifted_threshold <= output.price;
         }
-        fn get_asset_price(self: @ContractState, asset_id: felt252) -> u256 {
+        fn get_asset_price(self: @ContractState, asset_id: felt252) -> u128 {
             // Retrieve the oracle dispatcher
             let oracle_dispatcher = IPragmaABIDispatcher {
                 contract_address: self.pragma_contract.read()

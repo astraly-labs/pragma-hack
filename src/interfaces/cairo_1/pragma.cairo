@@ -1,4 +1,4 @@
-use starknet::ContractAddress;
+use starknet::{ContractAddress, ClassHash};
 
 #[derive(Copy, Drop, Serde, starknet::Store)]
 struct BaseEntry {
@@ -9,42 +9,40 @@ struct BaseEntry {
 
 #[derive(Serde, Drop, Copy)]
 struct GenericEntryStorage {
-    timestamp__value: u256, 
+    timestamp__value: u256,
 }
 
 #[derive(Copy, Drop, Serde)]
 struct SpotEntry {
     base: BaseEntry,
-    price: u256,
+    price: u128,
     pair_id: felt252,
-    volume: u256,
+    volume: u128,
 }
 #[derive(Copy, Drop, Serde)]
 struct GenericEntry {
     base: BaseEntry,
     key: felt252,
-    value: u256,
+    value: u128,
 }
 
 #[derive(Copy, Drop, PartialOrd, Serde)]
 struct FutureEntry {
     base: BaseEntry,
-    price: u256,
+    price: u128,
     pair_id: felt252,
-    volume: u256,
+    volume: u128,
     expiration_timestamp: u64,
 }
 
 
 #[derive(Serde, Drop, Copy)]
-struct SpotEntryStorage {
-    timestamp__volume__price: u256, 
+struct EntryStorage {
+    timestamp: u64,
+    volume: u128,
+    price: u128,
 }
 
-#[derive(Serde, Drop, Copy)]
-struct FutureEntryStorage {
-    timestamp__volume__price: u256, 
-}
 
 /// Data Types
 /// The value is the `pair_id` of the data
@@ -65,14 +63,14 @@ enum DataType {
 enum PossibleEntryStorage {
     Spot: u256, //structure SpotEntryStorage
     Future: u256, //structure FutureEntryStorage
-// Option: OptionEntryStorage, //structure OptionEntryStorage
+//  Option: OptionEntryStorage, //structure OptionEntryStorage
 }
 
 #[derive(Drop, Copy, Serde)]
 enum SimpleDataType {
     SpotEntry: (),
     FutureEntry: (),
-// OptionEntry: (),
+//  OptionEntry: (),
 }
 
 #[derive(Drop, Copy, Serde)]
@@ -80,7 +78,7 @@ enum PossibleEntries {
     Spot: SpotEntry,
     Future: FutureEntry,
     Generic: GenericEntry,
-// Option: OptionEntry,
+//  Option: OptionEntry,
 }
 
 
@@ -88,7 +86,7 @@ enum ArrayEntry {
     SpotEntry: Array<SpotEntry>,
     FutureEntry: Array<FutureEntry>,
     GenericEntry: Array<GenericEntry>,
-// OptionEntry: Array<OptionEntry>,
+//  OptionEntry: Array<OptionEntry>,
 }
 
 
@@ -111,7 +109,7 @@ struct Currency {
 #[derive(Serde, Drop)]
 struct Checkpoint {
     timestamp: u64,
-    value: u256,
+    value: u128,
     aggregation_mode: AggregationMode,
     num_sources_aggregated: u32,
 }
@@ -127,7 +125,7 @@ struct FetchCheckpoint {
 
 #[derive(Serde, Drop, Copy)]
 struct PragmaPricesResponse {
-    price: u256,
+    price: u128,
     decimals: u32,
     last_updated_timestamp: u64,
     num_sources_aggregated: u32,
@@ -143,46 +141,35 @@ enum AggregationMode {
 #[starknet::interface]
 trait IPragmaABI<TContractState> {
     fn get_decimals(self: @TContractState, data_type: DataType) -> u32;
-
     fn get_data_median(self: @TContractState, data_type: DataType) -> PragmaPricesResponse;
-
     fn get_data_median_for_sources(
         self: @TContractState, data_type: DataType, sources: Span<felt252>
     ) -> PragmaPricesResponse;
-
     fn get_data(
         self: @TContractState, data_type: DataType, aggregation_mode: AggregationMode
     ) -> PragmaPricesResponse;
-
+    fn get_data_median_multi(
+        self: @TContractState, data_types: Span<DataType>, sources: Span<felt252>
+    ) -> Span<PragmaPricesResponse>;
     fn get_data_entry(
         self: @TContractState, data_type: DataType, source: felt252
     ) -> PossibleEntries;
-
     fn get_data_for_sources(
         self: @TContractState,
         data_type: DataType,
         aggregation_mode: AggregationMode,
         sources: Span<felt252>
     ) -> PragmaPricesResponse;
-
+    fn get_data_entries(self: @TContractState, data_type: DataType) -> Span<PossibleEntries>;
     fn get_data_entries_for_sources(
         self: @TContractState, data_type: DataType, sources: Span<felt252>
     ) -> (Span<PossibleEntries>, u64);
-
-    fn get_data_median_multi(
-        self: @TContractState, data_types: Span<DataType>, sources: Span<felt252>
-    ) -> Span<PragmaPricesResponse>;
-
-
-    fn get_data_entries(self: @TContractState, data_type: DataType) -> Span<PossibleEntries>;
-
     fn get_last_checkpoint_before(
         self: @TContractState,
         data_type: DataType,
         timestamp: u64,
         aggregation_mode: AggregationMode,
     ) -> (Checkpoint, u64);
-
     fn get_data_with_USD_hop(
         self: @TContractState,
         base_currency_id: felt252,
@@ -191,14 +178,39 @@ trait IPragmaABI<TContractState> {
         typeof: SimpleDataType,
         expiration_timestamp: Option::<u64>
     ) -> PragmaPricesResponse;
-
-    fn get_latest_checkpoint(
-        self: @TContractState, data_type: DataType, aggregation_mode: AggregationMode
-    ) -> Checkpoint;
-
+    fn get_publisher_registry_address(self: @TContractState) -> ContractAddress;
     fn get_latest_checkpoint_index(
         self: @TContractState, data_type: DataType, aggregation_mode: AggregationMode
     ) -> (u64, bool);
+    fn get_latest_checkpoint(
+        self: @TContractState, data_type: DataType, aggregation_mode: AggregationMode
+    ) -> Checkpoint;
+    fn get_checkpoint(
+        self: @TContractState,
+        data_type: DataType,
+        checkpoint_index: u64,
+        aggregation_mode: AggregationMode
+    ) -> Checkpoint;
+    fn get_sources_threshold(self: @TContractState,) -> u32;
+    fn get_admin_address(self: @TContractState,) -> ContractAddress;
+    fn get_implementation_hash(self: @TContractState) -> ClassHash;
+    fn publish_data(ref self: TContractState, new_entry: PossibleEntries);
+    fn publish_data_entries(ref self: TContractState, new_entries: Span<PossibleEntries>);
+    fn set_admin_address(ref self: TContractState, new_admin_address: ContractAddress);
+    fn update_publisher_registry_address(
+        ref self: TContractState, new_publisher_registry_address: ContractAddress
+    );
+    fn add_currency(ref self: TContractState, new_currency: Currency);
+    fn update_currency(ref self: TContractState, currency_id: felt252, currency: Currency);
+    fn add_pair(ref self: TContractState, new_pair: Pair);
+    fn set_checkpoint(
+        ref self: TContractState, data_type: DataType, aggregation_mode: AggregationMode
+    );
+    fn set_checkpoints(
+        ref self: TContractState, data_types: Span<DataType>, aggregation_mode: AggregationMode
+    );
+    fn set_sources_threshold(ref self: TContractState, threshold: u32);
+    fn upgrade(ref self: TContractState, impl_hash: ClassHash);
 }
 
 

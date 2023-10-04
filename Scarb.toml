@@ -1,13 +1,13 @@
 [package]
 name = "hack_template"
-version = "0.1.0"
+version = "0.2.0"
 
 
 
 
 [dependencies]
-starknet = "2.1.0"
-alexandria_math = { git = "https://github.com/keep-starknet-strange/alexandria.git", rev = "9909280" }
+starknet = "2.2.0"
+alexandria_math = { git = "https://github.com/keep-starknet-strange/alexandria.git", rev = "46c8d8ab9e3bfb68b70a29b3246f809cd8bf70e4" }
 
 
 [[target.starknet-contract]]
