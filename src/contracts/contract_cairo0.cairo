@@ -23,7 +23,7 @@ mod HackTemplate {
         },
     };
 
-    use alexandria_math::math::pow;
+    use alexandria_math::pow;
     use starknet::get_block_timestamp;
     use option::OptionTrait;
 
