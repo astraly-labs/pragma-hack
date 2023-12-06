@@ -16,18 +16,19 @@ mod HackTemplate {
     use super::{ContractAddress, HackTemplateABI};
     use array::{ArrayTrait, SpanTrait};
     use traits::{Into, TryInto};
-    use hack_template::interfaces::{
-        cairo_1::pragma::{
-            IPragmaABIDispatcher, IPragmaABIDispatcherTrait, ISummaryStatsABIDispatcher,
-            ISummaryStatsABIDispatcherTrait, DataType, AggregationMode, PragmaPricesResponse
-        },
+    use pragma_lib::types::{DataType, AggregationMode, PragmaPricesResponse};
+    use pragma_lib::abi::{
+        IPragmaABIDispatcher, IPragmaABIDispatcherTrait, ISummaryStatsABIDispatcher,
+        ISummaryStatsABIDispatcherTrait
     };
 
     use alexandria_math::pow;
     use starknet::get_block_timestamp;
     use option::OptionTrait;
+
     const ETH_USD: felt252 = 'ETH/USD';
     const BTC_USD: felt252 = 'BTC/USD';
+
     #[storage]
     struct Storage {
         pragma_contract: ContractAddress,
@@ -62,6 +63,7 @@ mod HackTemplate {
             // We only care about DEFILLAMA and COINBASE
             let defillama: felt252 = 'DEFILLAMA';
             let coinbase: felt252 = 'COINBASE';
+
             let mut sources = array![defillama, coinbase];
             let output: PragmaPricesResponse = oracle_dispatcher
                 .get_data_for_sources(
