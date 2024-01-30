@@ -35,7 +35,7 @@ mod HackTemplate {
         summary_stats: ContractAddress,
     }
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     impl HackTemplateABIImpl of HackTemplateABI<ContractState> {
         fn initializer(
             ref self: ContractState,
