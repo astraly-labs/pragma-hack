@@ -3,7 +3,7 @@ use starknet::ContractAddress;
 #[starknet::interface]
 trait HackTemplateABI<TContractState> {
     fn initializer(
-        ref self: TContractState, pragma_contract: ContractAddress, summary_stats: ContractAddress
+        ref self: TContractState, pragma_contract: ContractAddress, summary_stats: ContractAddress,
     );
     fn check_eth_threshold(self: @TContractState, threshold: u32) -> bool;
     fn get_asset_price(self: @TContractState, asset_id: felt252) -> u128;
@@ -19,7 +19,7 @@ mod HackTemplate {
     use pragma_lib::types::{DataType, AggregationMode, PragmaPricesResponse};
     use pragma_lib::abi::{
         IPragmaABIDispatcher, IPragmaABIDispatcherTrait, ISummaryStatsABIDispatcher,
-        ISummaryStatsABIDispatcherTrait
+        ISummaryStatsABIDispatcherTrait,
     };
 
     use alexandria_math::pow;
@@ -40,7 +40,7 @@ mod HackTemplate {
         fn initializer(
             ref self: ContractState,
             pragma_contract: ContractAddress,
-            summary_stats: ContractAddress
+            summary_stats: ContractAddress,
         ) {
             if self.pragma_contract.read().into() == 0 {
                 self.pragma_contract.write(pragma_contract);
@@ -53,7 +53,7 @@ mod HackTemplate {
         fn check_eth_threshold(self: @ContractState, threshold: u32) -> bool {
             // Retrieve the oracle dispatcher
             let oracle_dispatcher = IPragmaABIDispatcher {
-                contract_address: self.pragma_contract.read()
+                contract_address: self.pragma_contract.read(),
             };
 
             // Call the Oracle contract
@@ -65,7 +65,7 @@ mod HackTemplate {
 
             let current_timestamp = get_block_timestamp();
             assert(
-                future_data.last_updated_timestamp >= current_timestamp - 500, 'Data is too old'
+                future_data.last_updated_timestamp >= current_timestamp - 500, 'Data is too old',
             );
 
             let min_num_sources = 3;
@@ -79,7 +79,7 @@ mod HackTemplate {
             let mut sources = array![skynet];
             let output: PragmaPricesResponse = oracle_dispatcher
                 .get_data_for_sources(
-                    DataType::SpotEntry(BTC_USD), AggregationMode::Median(()), sources.span()
+                    DataType::SpotEntry(BTC_USD), AggregationMode::Median(()), sources.span(),
                 );
 
             // Normalize based on number of decimals
@@ -94,7 +94,7 @@ mod HackTemplate {
         fn get_asset_price(self: @ContractState, asset_id: felt252) -> u128 {
             // Retrieve the oracle dispatcher
             let oracle_dispatcher = IPragmaABIDispatcher {
-                contract_address: self.pragma_contract.read()
+                contract_address: self.pragma_contract.read(),
             };
 
             // Call the Oracle contract, for a spot entry
@@ -106,7 +106,7 @@ mod HackTemplate {
 
         fn realized_volatility(self: @ContractState) -> (u128, u32) {
             let oracle_dispatcher = ISummaryStatsABIDispatcher {
-                contract_address: self.summary_stats.read()
+                contract_address: self.summary_stats.read(),
             };
 
             let key = 'ETH/USD';
@@ -123,17 +123,17 @@ mod HackTemplate {
                     start.into(),
                     end.into(),
                     num_samples,
-                    AggregationMode::Mean(())
+                    AggregationMode::Mean(()),
                 );
 
             let (mean, mean_decimals) = oracle_dispatcher
                 .calculate_mean(
-                    DataType::SpotEntry(key), start.into(), end.into(), AggregationMode::Median(())
+                    DataType::SpotEntry(key), start.into(), end.into(), AggregationMode::Median(()),
                 );
 
             let (twap, twap_decimals) = oracle_dispatcher
                 .calculate_twap(
-                    DataType::SpotEntry(key), AggregationMode::Mean(()), end.into(), start.into()
+                    DataType::SpotEntry(key), AggregationMode::Mean(()), end.into(), start.into(),
                 );
 
             (volatility, decimals)

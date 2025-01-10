@@ -4,9 +4,10 @@ version = "0.1.0"
 
 
 [dependencies]
-alexandria_math = { git = "https://github.com/keep-starknet-strange/alexandria.git" }
-pragma_lib = { git = "https://github.com/astraly-labs/pragma-lib" }
-starknet = ">=2.5.1"
+
+pragma_lib = { git = "https://github.com/astraly-labs/pragma-lib", rev = "cf9c4cc" }
+alexandria_math = { git = "https://github.com/keep-starknet-strange/alexandria.git", rev = "162bed1" }
+starknet = "=2.9.2"
 
 
 [[target.starknet-contract]]
