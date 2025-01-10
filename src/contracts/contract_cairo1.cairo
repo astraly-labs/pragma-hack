@@ -60,11 +60,23 @@ mod HackTemplate {
             let output: PragmaPricesResponse = oracle_dispatcher
                 .get_data_median(DataType::SpotEntry(ETH_USD));
 
-            // We only care about DEFILLAMA and COINBASE
-            let defillama: felt252 = 'DEFILLAMA';
-            let coinbase: felt252 = 'COINBASE';
+            let future_data: PragmaPricesResponse = oracle_dispatcher
+                .get_data_median(DataType::FutureEntry((ETH_USD, 0)));
 
-            let mut sources = array![defillama, coinbase];
+            let current_timestamp = get_block_timestamp();
+            assert(
+                future_data.last_updated_timestamp >= current_timestamp - 500, 'Data is too old'
+            );
+
+            let min_num_sources = 3;
+            assert(output.num_sources_aggregated >= min_num_sources, 'Not enough sources');
+
+            // We only care about DEFILLAMA and COINBASE
+            // let defillama: felt252 = 'DEFILLAMA';
+            // let coinbase: felt252 = 'COINBASE';
+            let skynet: felt252 = 'SKYNET_TRADING';
+
+            let mut sources = array![skynet];
             let output: PragmaPricesResponse = oracle_dispatcher
                 .get_data_for_sources(
                     DataType::SpotEntry(BTC_USD), AggregationMode::Median(()), sources.span()
@@ -111,12 +123,17 @@ mod HackTemplate {
                     start.into(),
                     end.into(),
                     num_samples,
-                    AggregationMode::Median(())
+                    AggregationMode::Mean(())
                 );
 
             let (mean, mean_decimals) = oracle_dispatcher
                 .calculate_mean(
                     DataType::SpotEntry(key), start.into(), end.into(), AggregationMode::Median(())
+                );
+
+            let (twap, twap_decimals) = oracle_dispatcher
+                .calculate_twap(
+                    DataType::SpotEntry(key), AggregationMode::Mean(()), end.into(), start.into()
                 );
 
             (volatility, decimals)
